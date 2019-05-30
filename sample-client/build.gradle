@@ -1,0 +1,26 @@
+plugins {
+    id 'java'
+}
+
+group 'net.qiujuer.lesson'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(':sample-foo')
+    implementation project(":lib-clink")
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+jar{
+    manifest{
+        attributes 'Manifest-Version' :1.0
+        attributes 'Main-Class' : 'net.qiujuer.lesson.sample.client.Client'
+    }
+    from { configurations.runtimeClasspath.findAll { it.name.endsWith('jar') }.collect { zipTree(it) }}
+}
