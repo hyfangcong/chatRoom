@@ -8,5 +8,7 @@ import java.io.IOException;
  * @date: 2019/5/26
  */
 public interface Sender extends Closeable {
-    boolean sendAsync(IoArgs ioArgs, IoArgs.IoArgsListener listener) throws IOException;
+    void setSendListener(IoArgs.IoArgsEventProcessor processor);
+
+    boolean postSendAsync() throws IOException;
 }

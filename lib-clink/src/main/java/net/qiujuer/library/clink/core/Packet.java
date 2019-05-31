@@ -11,15 +11,17 @@ import java.io.Closeable;
  * 公共类型的封装
  * 提供了类型及基本的长度定义
  */
-public abstract class Packet implements Closeable {
+public abstract class Packet<T> implements Closeable {
     protected  byte type;
-    protected int length;
+    protected long length;
 
     public byte type(){
         return this.type;
     }
 
-    public int length(){
+    public long length(){
         return this.length;
     }
+
+    public abstract T open();
 }

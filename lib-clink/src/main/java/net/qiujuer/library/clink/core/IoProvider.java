@@ -22,19 +22,9 @@ public interface IoProvider extends Closeable {
     }
 
     abstract class HandlerOutputCallback implements Runnable{
-        //缓冲区的数据写到attach中，等待网卡空闲的时候发送
-        private Object attach;
         @Override
         public void run(){
             canProvideOutput();
-        }
-        public void setAttach(Object attach) {
-            this.attach = attach;
-        }
-
-        public final <T> T getAttach(){
-            T attach = (T) this.attach;
-            return attach;
         }
         protected abstract void canProvideOutput();
     }
