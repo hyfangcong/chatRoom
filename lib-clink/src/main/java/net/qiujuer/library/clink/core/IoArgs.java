@@ -10,8 +10,8 @@ import java.nio.channels.SocketChannel;
  * @date: 2019/5/26
  */
 public class IoArgs {
-    private int limit = 10;
-    private byte[] byteBuffer = new byte[10];
+    private int limit = 256;
+    private byte[] byteBuffer = new byte[256];
     private ByteBuffer buffer = ByteBuffer.wrap(byteBuffer);
 
     /**

@@ -10,8 +10,6 @@ import java.io.InputStreamReader;
 
 public class Client {
     public static void main(String[] args) throws IOException {
-        IoContext context = IoContext.get();
-
         ServerInfo info = UDPSearcher.searchServer(10000);
         System.out.println("Server:" + info);
 

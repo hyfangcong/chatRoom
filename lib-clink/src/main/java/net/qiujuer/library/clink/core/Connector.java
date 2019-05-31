@@ -26,7 +26,6 @@ public class Connector implements SocketChannelAdapter.OnChannelStatusChangedLis
     public void setup(SocketChannel socketChannel) throws IOException {
         this.socketChannel = socketChannel;
         //IoContext是单例模式
-        System.out.println("context hash code--" + IoContext.get().hashCode());
         SocketChannelAdapter socketChannelAdapter = new SocketChannelAdapter(socketChannel,IoContext.get().getIoProvider(), this);
         this.sender = socketChannelAdapter;
         this.receiver = socketChannelAdapter;

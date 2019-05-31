@@ -112,7 +112,6 @@ public class AsyncReceiveDispatcher implements ReceiveDispatcher {
         public void onComplement(IoArgs ioArgs) {
             assemblePacket(ioArgs);
             //继续接收下一条消息
-            System.out.println("重新注册reader");
             registerReceive();
         }
     };

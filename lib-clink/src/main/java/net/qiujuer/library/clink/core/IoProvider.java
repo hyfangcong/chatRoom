@@ -29,7 +29,6 @@ public interface IoProvider extends Closeable {
             canProvideOutput();
         }
         public void setAttach(Object attach) {
-            System.out.println(Thread.currentThread().getName() + "attach hashcode-- " + attach.hashCode());
             this.attach = attach;
         }
 

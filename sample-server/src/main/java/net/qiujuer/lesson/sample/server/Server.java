@@ -9,9 +9,7 @@ import java.io.InputStreamReader;
 
 public class Server {
     public static void main(String[] args) throws IOException {
-        IoContext context = IoContext.get();
-        System.out.println("context hashcode--" + context.hashCode());
-        System.out.println("context hashcode--" + context.hashCode());
+//        IoContext.get();
         TCPServer tcpServer = new TCPServer(TCPConstants.PORT_SERVER);
         boolean isSucceed = tcpServer.start();
         if (!isSucceed) {
