@@ -77,10 +77,10 @@ public class AsyncReceiveDispatcher implements ReceiveDispatcher {
         }
         int count = ioArgs.writeTo(buffer, position);
         if(count > 0){
-            packetTemp.save(buffer, count);
             position += count;
             //检查是否完成一份packet的接收
             if(position == total){
+                packetTemp.save(buffer, total);
                 completePacket();
                 packetTemp = null;
             }

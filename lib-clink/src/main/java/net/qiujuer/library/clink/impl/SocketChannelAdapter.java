@@ -88,8 +88,10 @@ public class SocketChannelAdapter implements Receiver, Sender, Closeable {
             listener.onStart(ioArgs);
             try{
                 //具体的读取操作
-                if(listener != null && ioArgs.readFrom(socketChannel) > 0){
+                int len;
+                if(listener != null &&  (len = ioArgs.readFrom(socketChannel)) > 0){
                     //读取完成后回调
+                    System.out.println(Thread.currentThread().getName() + "从channel中读取数据， len：" + len);
                     listener.onComplement(ioArgs);
                 }else{
                     throw new IOException("cannot readFrom any data!");
@@ -109,11 +111,12 @@ public class SocketChannelAdapter implements Receiver, Sender, Closeable {
             }
             IoArgs.IoArgsListener listener = sendIoEventListener;
             IoArgs ioArgs = getAttach();
+            System.out.println(Thread.currentThread().getName() + "write to channel attach hashcode ---" + ioArgs.hashCode()) ;
             try{
                 //具体的写操作
                 if(listener != null){
-                    System.out.println("写数据到channel" );
-                    ioArgs.writeTo(socketChannel);
+                    int len = ioArgs.writeTo(socketChannel);
+                    System.out.println(Thread.currentThread().getName() + " 写数据到channel--len:" + len );
                     //完成后回调
                     listener.onComplement(ioArgs);
                 }else{

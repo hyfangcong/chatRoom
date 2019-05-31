@@ -8,7 +8,6 @@ import net.qiujuer.library.clink.utils.CloseUtils;
 
 import java.io.IOException;
 import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -38,8 +37,8 @@ public class AsyncSendDispatcher implements SendDispatcher {
     public void send(SendPacket packet) {
         synchronized (queueLock) {
             queue.offer(packet);
-            if (isSending.compareAndSet(false, true)) ;
-            sendNextMessage();
+            if (isSending.compareAndSet(false, true))
+                sendNextMessage();
         }
     }
 
@@ -77,8 +76,10 @@ public class AsyncSendDispatcher implements SendDispatcher {
         }
         //拿一个新的包
         SendPacket packet = packetTemp = takePacket();
+        System.out.println(Thread.currentThread().getName() + "拿一个新的包");
         if(packet == null){
             //队列为空，取消发送状态
+            System.out.println(Thread.currentThread() .getName() + "队列为空取消发送");
             isSending.set(false);
             return;
         }
@@ -106,7 +107,7 @@ public class AsyncSendDispatcher implements SendDispatcher {
         ioArgs.finishedWrite();
 
         try {
-            System.out.println("异步发送-ioArgs hashcode-" + ioArgs.hashCode());
+            System.out.println(Thread.currentThread().getName() + "异步发送-ioArgs hashcode-" + ioArgs.hashCode());
             sender.sendAsync(ioArgs, ioArgsListener);
         } catch (IOException e) {
             System.out.println("IO异常");

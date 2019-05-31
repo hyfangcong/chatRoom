@@ -70,9 +70,9 @@ public class IoSelectorProvider implements IoProvider {
     private void waitRegister(AtomicBoolean locker){
         synchronized (locker) {
             if(locker.equals(inRegOutput))
-                System.out.println("write wait acquired lock");
+                System.out.println(Thread.currentThread() .getName() + "write wait acquired lock");
             if(locker.equals(inRegInput))
-                System.out.println("read wait acquired lock");
+                System.out.println(Thread.currentThread() .getName() +"read wait acquired lock");
             if (locker.get()) {
                 try {
                     locker.wait();
@@ -97,7 +97,7 @@ public class IoSelectorProvider implements IoProvider {
                         Set<SelectionKey> selectionKeys = readHandSelector.selectedKeys();
                         for(SelectionKey key : selectionKeys){
                             if(key.isValid()){
-                                System.out.println("channel accept ready");
+                                System.out.println(Thread.currentThread().getName() + " 读事件就绪");
                                 handlerSelection(key, SelectionKey.OP_READ, inputCallbackMap, inputThreadPool);
                             }
                         }
@@ -123,7 +123,7 @@ public class IoSelectorProvider implements IoProvider {
                             waitRegister(inRegOutput);
                             continue;
                         }
-                        System.out.println("start write 中为可写状态");
+                        System.out.println(Thread.currentThread().getName() + "start write 中为可写状态");
                         Set<SelectionKey> selectionKeys = writeHanSelector.selectedKeys();
                         for(SelectionKey key : selectionKeys){
                             if(key.isValid()){
@@ -241,6 +241,7 @@ public class IoSelectorProvider implements IoProvider {
                                   ExecutorService pool){
         //重点
         //取消继续对keyOps的监听, 直到读取完成后在重新监听
+        //一定要取消监听，不然selector.selector()会一直返回就绪。
         key.interestOps(key.readyOps() & ~keyOps);
         Runnable r = null;
         try{

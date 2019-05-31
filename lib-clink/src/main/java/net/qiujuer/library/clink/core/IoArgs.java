@@ -10,8 +10,8 @@ import java.nio.channels.SocketChannel;
  * @date: 2019/5/26
  */
 public class IoArgs {
-    private int limit = 256;
-    private byte[] byteBuffer = new byte[256];
+    private int limit = 10;
+    private byte[] byteBuffer = new byte[10];
     private ByteBuffer buffer = ByteBuffer.wrap(byteBuffer);
 
     /**
@@ -90,7 +90,7 @@ public class IoArgs {
     public void startWriting(){
         buffer.clear();
         //定义单次写操作容纳区间
-       // buffer.limit(limit);
+        buffer.limit(limit);
     }
 
     public void writeLength(int total){
