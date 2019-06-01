@@ -1,10 +1,7 @@
 package net.qiujuer.library.clink.impl.async;
 
 import net.qiujuer.library.clink.box.StringReceivePacket;
-import net.qiujuer.library.clink.core.IoArgs;
-import net.qiujuer.library.clink.core.ReceiveDispatcher;
-import net.qiujuer.library.clink.core.ReceivePacket;
-import net.qiujuer.library.clink.core.Receiver;
+import net.qiujuer.library.clink.core.*;
 import net.qiujuer.library.clink.utils.CloseUtils;
 
 import java.io.IOException;
@@ -16,18 +13,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author: fangcong
  * @date: 2019/5/28
  */
-public class AsyncReceiveDispatcher implements ReceiveDispatcher, IoArgs.IoArgsEventProcessor {
+public class AsyncReceiveDispatcher implements ReceiveDispatcher,
+        IoArgs.IoArgsEventProcessor , AsyncPacketWriter.PacketProvider {
     private final AtomicBoolean isClosed = new AtomicBoolean();
 
     private final Receiver receiver;
     private final ReceivePacketCallback callback;
 
-    private IoArgs ioArgs = new IoArgs();
-    private ReceivePacket packetTemp;
-
-    private WritableByteChannel packetChannel;
-    private long total;
-    private long position;
+    private final AsyncPacketWriter packetWriter = new AsyncPacketWriter(this);
 
     public AsyncReceiveDispatcher(Receiver receiver, ReceivePacketCallback callback){
         this.receiver = receiver;
@@ -49,7 +42,7 @@ public class AsyncReceiveDispatcher implements ReceiveDispatcher, IoArgs.IoArgsE
     @Override
     public void close() throws IOException {
         if(isClosed.compareAndSet(false, true)) {
-            completePacket(false);
+            packetWriter.close();
         }
     }
 
@@ -65,57 +58,9 @@ public class AsyncReceiveDispatcher implements ReceiveDispatcher, IoArgs.IoArgsE
         CloseUtils.close(this);
     }
 
-    //解析数据到packet
-    private void assemblePacket(IoArgs ioArgs){
-        if(packetTemp == null){
-            int length = ioArgs.readLength();
-            packetTemp = new StringReceivePacket(length);
-            packetChannel = Channels.newChannel(packetTemp.open());
-
-            total = length;
-            position = 0;
-        }
-        try {
-            int count = ioArgs.writeTo(packetChannel);
-                position += count;
-                //检查是否完成一份packet的接收
-                if (position == total) {
-                    completePacket(true);
-                }
-        }catch (IOException e){
-            e.printStackTrace();
-            completePacket(false);
-        }
-    }
-
-    //完成数据接收操作
-    private void completePacket(boolean isSuccess) {
-        ReceivePacket packet = this.packetTemp;
-        CloseUtils.close(packet);
-        packetTemp = null;
-
-        WritableByteChannel channel = this.packetChannel;
-        CloseUtils.close(channel);
-        packetChannel = null;
-
-        //通知外层已经接收到了一份packet
-        if(packet != null) {
-            callback.onReceivePacketCompleted(packet);
-        }
-    }
-
     @Override
     public IoArgs provideIoArgs() {
-        IoArgs args = this.ioArgs;
-        int receiveSize;
-        if(packetTemp == null){
-            receiveSize = 4;
-        }else{
-            receiveSize = (int)Math.min(total - position, ioArgs.capacity());
-        }
-        //设置本次的数据大小
-        ioArgs.limit(receiveSize);
-        return args;
+        return packetWriter.takeIoArgs();
     }
 
     @Override
@@ -125,7 +70,22 @@ public class AsyncReceiveDispatcher implements ReceiveDispatcher, IoArgs.IoArgsE
 
     @Override
     public void onConsumeCompleted(IoArgs ioArgs) {
-        assemblePacket(ioArgs);
+        //递归操作
+        do {
+            packetWriter.consumeIoArgs(ioArgs);
+        }while(ioArgs.remained());
         registerReceive();
+    }
+
+
+    @Override
+    public ReceivePacket takePacket(byte type, long length, byte[] headerInfo) {
+        return callback.onArrivedNewPacket(type, length);
+    }
+
+    @Override
+    public void completedPacket(ReceivePacket packet, boolean isSuccess) {
+        CloseUtils.close(packet);
+        callback.onReceivePacketCompleted(packet);
     }
 }

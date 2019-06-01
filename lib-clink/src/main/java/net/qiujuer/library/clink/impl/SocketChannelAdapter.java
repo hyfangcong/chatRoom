@@ -86,7 +86,10 @@ public class SocketChannelAdapter implements Receiver, Sender, Closeable {
             IoArgs ioArgs = processor.provideIoArgs();
             try{
                 //具体的读取操作
-                if(ioArgs.readFrom(socketChannel) > 0){
+                if(ioArgs == null){
+                    processor.onConsumeFailed(null, new IOException("providerIoArgs is null "));
+                }
+                else if(ioArgs.readFrom(socketChannel) > 0){
                     //读取完成后回调
                     processor.onConsumeCompleted(ioArgs);
                 }else{
@@ -107,10 +110,12 @@ public class SocketChannelAdapter implements Receiver, Sender, Closeable {
             }
             IoArgs.IoArgsEventProcessor processor = sendIoEventProcessor;
             IoArgs ioArgs = processor.provideIoArgs();
-            System.out.println(Thread.currentThread().getName() + "发送数据--ioargs hashcode --" + ioArgs.hashCode());
             try{
                 //具体的写操作
-                if(ioArgs.writeTo(socketChannel) > 0){
+                if(ioArgs == null){
+                    processor.onConsumeFailed(null, new IOException("providerIoArgs is null "));
+                }
+                else if(ioArgs.writeTo(socketChannel) > 0){
                     //完成后回调
                     processor.onConsumeCompleted(ioArgs);
                 }else{

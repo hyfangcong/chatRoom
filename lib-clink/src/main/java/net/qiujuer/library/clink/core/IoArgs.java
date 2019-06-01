@@ -12,15 +12,36 @@ import java.nio.channels.WritableByteChannel;
  * @date: 2019/5/26
  */
 public class IoArgs {
-    private int limit = 5;
-    private ByteBuffer buffer = ByteBuffer.allocate(5);
+    private int limit = 512;
+    private ByteBuffer buffer = ByteBuffer.allocate(512);
+
+    /**
+     * 从bytes数组中进行消费
+     */
+    public int readFrom(byte[] bytes, int offset, int count) {
+        int size = Math.min(count, buffer.remaining());
+        if(size <= 0){
+            return 0;
+        }
+
+        buffer.put(bytes, offset, count);
+        return size;
+    }
+
+    /**
+     * 写数据到bytes数组中
+     */
+    public int writeTo(byte[] bytes, int offset) {
+        int size = Math.min(bytes.length - offset, buffer.remaining());
+        buffer.get(bytes, offset, size);
+        return size;
+    }
 
     /**
      * 从channel中读取数据到buffer
      * @return
      */
     public int readFrom(ReadableByteChannel channel) throws IOException {
-        startWriting();
         int bytesProduced = 0;
         while(buffer.hasRemaining()){
             int len = channel.read(buffer);
@@ -31,7 +52,6 @@ public class IoArgs {
                 break;
             bytesProduced += len;
         }
-        finishedWrite();
         return bytesProduced;
     }
 
@@ -99,11 +119,6 @@ public class IoArgs {
         buffer.limit(limit);
     }
 
-    public void writeLength(int total){
-        startWriting();
-        buffer.putInt(total);
-        finishedWrite();
-    }
     public int readLength(){
         return buffer.getInt();
     }
@@ -113,7 +128,33 @@ public class IoArgs {
     }
 
     public void limit(int limit){
-        this.limit = limit;
+        this.limit = Math.min(limit, capacity());
+    }
+
+    public boolean remained() {
+        return buffer.remaining() > 0;
+    }
+
+    /**
+     * 填充空数据
+     * @param size
+     * @return
+     */
+    public int fillEmpty(int size) {
+        int bufferSize = Math.min(size, buffer.remaining());
+        buffer.position(buffer.position() + bufferSize);
+        return bufferSize;
+    }
+
+    /**
+     * 清空数据
+     * @param size
+     * @return
+     */
+    public int setEmpty(int size) {
+        int emptySize = Math.min(size, buffer.remaining());
+        buffer.position(buffer.position() + emptySize);
+        return emptySize;
     }
 
     /**

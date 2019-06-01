@@ -10,24 +10,19 @@ import java.io.IOException;
  * @author: fangcong
  * @date: 2019/5/27
  */
-public class StringReceivePacket extends ReceivePacket<ByteArrayOutputStream> {
-    private String string;
-    public StringReceivePacket(int len){
-        this.length = len;
-    }
-
-    public String string(){
-        return string;
+public class StringReceivePacket extends AbsByteArrayReceivePacket<String>  {
+    public StringReceivePacket(long len){
+        super(len);
     }
 
     @Override
-    protected ByteArrayOutputStream createStream() {
-        return new ByteArrayOutputStream((int) length);
+    protected String buildEntity(ByteArrayOutputStream stream) {
+        return new String(stream.toByteArray());
     }
 
+
     @Override
-    protected void closeStream(ByteArrayOutputStream outputStream) throws IOException {
-        super.closeStream(outputStream);
-        string = new String(outputStream.toByteArray());
+    public byte type() {
+        return TYPE_MEMORY_STRING;
     }
 }
