@@ -4,4 +4,4 @@ out
 
 *.class
 
-.tmp
+*.tmp
